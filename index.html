@@ -2682,16 +2682,6 @@ async function handleContactSubmit(e) {
     const { createClient } = supabase;
     const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // 3. A test function to see if it works!
-    async function testConnection() {
-        const { data, error } = await _supabase.from('todos').select('*');
-        if (error) {
-            console.log('Database connection error:', error.message);
-        } else {
-            console.log('Success! Here is data from my database:', data);
-        }
-    }
-
     // Run the test when the page opens
     testConnection();
 </script>
