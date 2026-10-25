@@ -2654,54 +2654,6 @@ async function handleContactSubmit(e) {
   }
 }
 
-  alertBox.classList.remove("hidden");
-  alertBox.className =
-    "mt-4 p-4 rounded-xl bg-blue-100 text-blue-800 text-sm font-semibold text-center";
-  alertBox.textContent = "Sending your message...";
-
-  if (submitButton) {
-    submitButton.disabled = true;
-    submitButton.textContent = "Sending...";
-  }
-
-  try {
-    const response = await fetch(
-      "https://qekgglkivbnqvwzreeiq.supabase.co/functions/v1/submit-contact",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      }
-    );
-
-    const result = await response.json();
-
-    if (!response.ok || !result.success) {
-      throw new Error(result.error || "Unable to send your message.");
-    }
-
-    alertBox.className =
-      "mt-4 p-4 rounded-xl bg-green-100 text-green-800 text-sm font-semibold text-center";
-    alertBox.textContent =
-      "Thank you for contacting Palcon Dairy! Your message has been received.";
-
-    form.reset();
-  } catch (error) {
-    console.error("Contact submission error:", error);
-
-    alertBox.className =
-      "mt-4 p-4 rounded-xl bg-red-100 text-red-800 text-sm font-semibold text-center";
-    alertBox.textContent =
-      error.message || "Unable to send your message. Please try again.";
-  } finally {
-    if (submitButton) {
-      submitButton.disabled = false;
-      submitButton.textContent = "Send Message";
-    }
-  }
-}
 
 
     document.addEventListener('DOMContentLoaded', function() {
