@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Palcon Dairy | Members Portal</title>
+  <link rel="stylesheet" href="members.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">P</span>
+      <span>
+        <strong>PALCON DAIRY</strong>
+        <small>Cooperative Members Portal</small>
+      </span>
+    </a>
+    <span class="demo-pill">LAYOUT DEMO</span>
+  </header>
+
+  <main class="page-wrap">
+    <section class="intro">
+      <div>
+        <p class="eyebrow">MEMBERSHIP SERVICES</p>
+        <h1>Members Portal</h1>
+        <p class="subhead">
+          Manage member records and view personal profiles.
+        </p>
+      </div>
+
+      <div class="mode-switch">
+        <button class="mode-btn active" data-view="admin">
+          Admin view
+        </button>
+        <button class="mode-btn" data-view="member">
+          My profile
+        </button>
+      </div>
+    </section>
+
+    <div class="notice">
+      <strong>Demo only:</strong>
+      Sample data lang ito. Hindi pa nakakonekta sa Supabase
+      at hindi pa ligtas gamitin para sa totoong member records.
+    </div>
+
+    <section id="adminView">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">STAFF WORKSPACE</p>
+          <h2>Members Directory</h2>
+        </div>
+        <button class="primary-btn" id="addMemberBtn">
+          + Add member
+        </button>
+      </div>
+
+      <div class="stats">
+        <article class="stat-card">
+          <span>Total sample records</span>
+          <strong id="totalCount">3</strong>
+        </article>
+        <article class="stat-card">
+          <span>Active</span>
+          <strong id="activeCount">2</strong>
+        </article>
+        <article class="stat-card">
+          <span>Pending verification</span>
+          <strong id="pendingCount">1</strong>
+        </article>
+      </div>
+
+      <div class="toolbar">
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Search name or Member ID"
+          aria-label="Search members"
+        >
+        <select id="statusFilter" aria-label="Filter by status">
+          <option value="all">All statuses</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+          <option value="pending_verification">
+            Pending verification
+          </option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Member ID</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="membersTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="memberView" class="hidden">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">MEMBER WORKSPACE</p>
+          <h2>My Member Profile</h2>
+        </div>
+      </div>
+
+      <article class="profile-card">
+        <div class="profile-banner"></div>
+        <div class="profile-body">
+          <h3>Sample Member</h3>
+          <p>Fictional sample profile only</p>
+        </div>
+
+        <div class="profile-grid">
+          <div class="detail">
+            <span>Member ID</span>
+            <strong>PDC-DEMO-001</strong>
+          </div>
+          <div class="detail">
+            <span>Membership category</span>
+            <strong>Smallholder Dairy Farmer</strong>
+          </div>
+          <div class="detail">
+            <span>Status</span>
+            <strong>Pending verification</strong>
+          </div>
+          <div class="detail">
+            <span>Contact information</span>
+            <strong>Not added in demo</strong>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer>Palcon Dairy Cooperative • Portal prototype</footer>
+
+  <script src="members.js"></script>
+</body>
+</html>
