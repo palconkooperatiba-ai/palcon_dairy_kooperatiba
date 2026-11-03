@@ -2249,14 +2249,6 @@ async function handleNewMemberSubmit(e) {
     // Language Toggle
     
 // Language Toggle
-function setLanguageText(id, value) {
-  const element = document.getElementById(id);
-
-  // Skip missing elements instead of stopping the translation.
-  if (element && value !== undefined) {
-    element.textContent = value;
-  }
-}
 
 // LANGUAGE TOGGLE
 
@@ -2271,20 +2263,44 @@ function setLanguageText(id, value) {
 function applyLanguage() {
   const dict = dictionary[currentLang];
 
-  setLanguageText(
-    'lang-btn-text',
-    currentLang === 'en' ? 'Filipino' : 'English'
-  );
+  if (!dict) return;
 
-  // HOME
-  setLanguageText('home-title', dict.homeTitle);
-  setLanguageText('home-subtitle', dict.homeSubtitle);
-  setLanguageText('home-description', dict.homeDescription);
+  // LANGUAGE BUTTON
+  setLanguageText('lang-btn-text', dict.filipinoBtn);
 
-  // REGISTRATION
-  setLanguageText('login-btn-text', dict.loginBtn);
+  // HEADER
+  setLanguageText('nav-subtitle', dict.subtitle);
+  setLanguageText('login-btn-text', currentLang === 'en' ? 'Log In' : 'Mag-login');
+
+  // HOME PAGE
+  setLanguageText('hero-badge', dict.heroBadge);
+  setLanguageText('hero-title', dict.heroTitle);
+  setLanguageText('hero-desc', dict.heroDesc);
+  setLanguageText('hero-cta-portal', dict.heroPortalCTA);
+  setLanguageText('hero-cta-store', dict.heroStoreCTA);
+
+  setLanguageText('stat-milk-label', dict.statMilk);
+  setLanguageText('stat-payout-label', dict.statPayout);
+
+  setLanguageText('card1-title', dict.card1Title);
+  setLanguageText('card1-desc', dict.card1Desc);
+  setLanguageText('card2-title', dict.card2Title);
+  setLanguageText('card2-desc', dict.card2Desc);
+  setLanguageText('card3-title', dict.card3Title);
+  setLanguageText('card3-desc', dict.card3Desc);
+
+  // NEWS
+  setLanguageText('news-badge', dict.newsBadge);
+  setLanguageText('news-section-title', dict.newsTitle);
+  setLanguageText('news-section-sub', dict.newsSub);
+
+  // SUCCESS STORIES
+  setLanguageText('stories-badge', dict.storiesBadge);
+  setLanguageText('stories-title', dict.storiesTitle);
+  setLanguageText('stories-sub', dict.storiesSub);
+
+  // MEMBER PORTAL
   setLanguageText('mobile-login-text', dict.memberLogin);
-  setLanguageText('btn-submit-existsetup', dict.btnSubmitExistSetup);
 }
 
 function toggleLanguage() {
@@ -2294,6 +2310,7 @@ function toggleLanguage() {
 
   applyLanguage();
 }
+
     // Shopping Cart Logic
     function addToCart(itemName, price) {
       const existing = cart.find(item => item.name === itemName);
