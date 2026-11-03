@@ -2247,50 +2247,75 @@ async function handleNewMemberSubmit(e) {
     }
 
     // Language Toggle
-    function toggleLanguage() {
-      currentLang = currentLang === 'en' ? 'tl' : 'en';
-      const dict = dictionary[currentLang];
+    
+// Language Toggle
+function setLanguageText(id, value) {
+  const element = document.getElementById(id);
 
-      document.getElementById('lang-btn-text').innerText = dict.filipinoBtn;
-     document.getElementById('login-btn-text').innerText = "Log In";
-      document.getElementById('mobile-login-text').innerText = dict.memberLogin;
-      
-      document.getElementById('hero-badge').innerText = dict.heroBadge;
-      document.getElementById('hero-title').innerText = dict.heroTitle;
-      document.getElementById('hero-desc').innerText = dict.heroDesc;
-      document.getElementById('hero-cta-portal').innerText = dict.heroPortalCTA;
-      document.getElementById('hero-cta-store').innerText = dict.heroStoreCTA;
+  // Skip missing elements instead of stopping the translation.
+  if (element && value !== undefined) {
+    element.textContent = value;
+  }
+}
 
-      document.getElementById('stat-milk-label').innerText = dict.statMilk;
-      document.getElementById('stat-payout-label').innerText = dict.statPayout;
+function toggleLanguage() {
+  currentLang = currentLang === 'en' ? 'tl' : 'en';
 
-      document.getElementById('card1-title').innerText = dict.card1Title;
-      document.getElementById('card1-desc').innerText = dict.card1Desc;
-      document.getElementById('card2-title').innerText = dict.card2Title;
-      document.getElementById('card2-desc').innerText = dict.card2Desc;
-      document.getElementById('card3-title').innerText = dict.card3Title;
-      document.getElementById('card3-desc').innerText = dict.card3Desc;
+  const dict = dictionary[currentLang];
 
-      document.getElementById('news-badge').innerText = dict.newsBadge;
-      document.getElementById('news-section-title').innerText = dict.newsTitle;
-      document.getElementById('news-section-sub').innerText = dict.newsSub;
+  // Save selected language
+  try {
+    localStorage.setItem('palcon-language', currentLang);
+  } catch (error) {
+    console.warn('Unable to save language preference:', error);
+  }
 
-      document.getElementById('stories-badge').innerText = dict.storiesBadge;
-      document.getElementById('stories-title').innerText = dict.storiesTitle;
-      document.getElementById('stories-sub').innerText = dict.storiesSub;
+  // Header
+  setLanguageText('lang-btn-text', dict.filipinoBtn);
+  setLanguageText('nav-subtitle', dict.subtitle);
+  setLanguageText(
+    'login-btn-text',
+    currentLang === 'en' ? 'Log In' : 'Mag-login'
+  );
+  setLanguageText('mobile-login-text', dict.memberLogin);
 
-      // Portal Register Dictionary
-      document.getElementById('tab-title-login').innerText = dict.tabLogin;
-      document.getElementById('tab-title-register').innerText = dict.tabRegister;
-      document.getElementById('reg-hub-title').innerText = dict.regHubTitle;
-      document.getElementById('reg-hub-sub').innerText = dict.regHubSub;
-      document.getElementById('regtype-new-title').innerText = dict.regTypeNewTitle;
-      document.getElementById('regtype-new-desc').innerText = dict.regTypeNewDesc;
-      document.getElementById('regtype-exist-title').innerText = dict.regTypeExistTitle;
-      document.getElementById('regtype-exist-desc').innerText = dict.regTypeExistDesc;
-      document.getElementById('btn-submit-newapp').innerText = dict.btnSubmitNewApp;
-      document.getElementById('btn-submit-existsetup').innerText = dict.btnSubmitExistSetup;
-    }
+  // Home page
+  setLanguageText('hero-badge', dict.heroBadge);
+  setLanguageText('hero-title', dict.heroTitle);
+  setLanguageText('hero-desc', dict.heroDesc);
+  setLanguageText('hero-cta-portal', dict.heroPortalCTA);
+  setLanguageText('hero-cta-store', dict.heroStoreCTA);
+
+  setLanguageText('stat-milk-label', dict.statMilk);
+  setLanguageText('stat-payout-label', dict.statPayout);
+
+  setLanguageText('card1-title', dict.card1Title);
+  setLanguageText('card1-desc', dict.card1Desc);
+  setLanguageText('card2-title', dict.card2Title);
+  setLanguageText('card2-desc', dict.card2Desc);
+  setLanguageText('card3-title', dict.card3Title);
+  setLanguageText('card3-desc', dict.card3Desc);
+
+  setLanguageText('news-badge', dict.newsBadge);
+  setLanguageText('news-section-title', dict.newsTitle);
+  setLanguageText('news-section-sub', dict.newsSub);
+
+  setLanguageText('stories-badge', dict.storiesBadge);
+  setLanguageText('stories-title', dict.storiesTitle);
+  setLanguageText('stories-sub', dict.storiesSub);
+
+  // Member Portal registration
+  setLanguageText('tab-title-login', dict.tabLogin);
+  setLanguageText('tab-title-register', dict.tabRegister);
+  setLanguageText('reg-hub-title', dict.regHubTitle);
+  setLanguageText('reg-hub-sub', dict.regHubSub);
+  setLanguageText('regtype-new-title', dict.regTypeNewTitle);
+  setLanguageText('regtype-new-desc', dict.regTypeNewDesc);
+  setLanguageText('regtype-exist-title', dict.regTypeExistTitle);
+  setLanguageText('regtype-exist-desc', dict.regTypeExistDesc);
+  setLanguageText('btn-submit-newapp', dict.btnSubmitNewApp);
+  setLanguageText('btn-submit-existsetup', dict.btnSubmitExistSetup);
+}
 
     // Shopping Cart Logic
     function addToCart(itemName, price) {
