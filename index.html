@@ -2038,9 +2038,13 @@
     };
 
     // Initialize Lucide Icons on DOM Load
-    document.addEventListener("DOMContentLoaded", () => {
-      lucide.createIcons();
-    });
+  document.addEventListener("DOMContentLoaded", () => {
+  currentLang = localStorage.getItem('palcon-language') || 'en';
+
+  applyLanguage();
+
+  lucide.createIcons();
+});
 
     // Navigation Switcher
     function switchTab(pageId) {
