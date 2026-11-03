@@ -2258,65 +2258,42 @@ function setLanguageText(id, value) {
   }
 }
 
-function toggleLanguage() {
-  currentLang = currentLang === 'en' ? 'tl' : 'en';
+// LANGUAGE TOGGLE
 
+function setLanguageText(id, value) {
+  const element = document.getElementById(id);
+
+  if (element && value !== undefined) {
+    element.textContent = value;
+  }
+}
+
+function applyLanguage() {
   const dict = dictionary[currentLang];
 
-  // Save selected language
-  try {
-    localStorage.setItem('palcon-language', currentLang);
-  } catch (error) {
-    console.warn('Unable to save language preference:', error);
-  }
-
-  // Header
-  setLanguageText('lang-btn-text', dict.filipinoBtn);
-  setLanguageText('nav-subtitle', dict.subtitle);
   setLanguageText(
-    'login-btn-text',
-    currentLang === 'en' ? 'Log In' : 'Mag-login'
+    'lang-btn-text',
+    currentLang === 'en' ? 'Filipino' : 'English'
   );
+
+  // HOME
+  setLanguageText('home-title', dict.homeTitle);
+  setLanguageText('home-subtitle', dict.homeSubtitle);
+  setLanguageText('home-description', dict.homeDescription);
+
+  // REGISTRATION
+  setLanguageText('login-btn-text', dict.loginBtn);
   setLanguageText('mobile-login-text', dict.memberLogin);
-
-  // Home page
-  setLanguageText('hero-badge', dict.heroBadge);
-  setLanguageText('hero-title', dict.heroTitle);
-  setLanguageText('hero-desc', dict.heroDesc);
-  setLanguageText('hero-cta-portal', dict.heroPortalCTA);
-  setLanguageText('hero-cta-store', dict.heroStoreCTA);
-
-  setLanguageText('stat-milk-label', dict.statMilk);
-  setLanguageText('stat-payout-label', dict.statPayout);
-
-  setLanguageText('card1-title', dict.card1Title);
-  setLanguageText('card1-desc', dict.card1Desc);
-  setLanguageText('card2-title', dict.card2Title);
-  setLanguageText('card2-desc', dict.card2Desc);
-  setLanguageText('card3-title', dict.card3Title);
-  setLanguageText('card3-desc', dict.card3Desc);
-
-  setLanguageText('news-badge', dict.newsBadge);
-  setLanguageText('news-section-title', dict.newsTitle);
-  setLanguageText('news-section-sub', dict.newsSub);
-
-  setLanguageText('stories-badge', dict.storiesBadge);
-  setLanguageText('stories-title', dict.storiesTitle);
-  setLanguageText('stories-sub', dict.storiesSub);
-
-  // Member Portal registration
-  setLanguageText('tab-title-login', dict.tabLogin);
-  setLanguageText('tab-title-register', dict.tabRegister);
-  setLanguageText('reg-hub-title', dict.regHubTitle);
-  setLanguageText('reg-hub-sub', dict.regHubSub);
-  setLanguageText('regtype-new-title', dict.regTypeNewTitle);
-  setLanguageText('regtype-new-desc', dict.regTypeNewDesc);
-  setLanguageText('regtype-exist-title', dict.regTypeExistTitle);
-  setLanguageText('regtype-exist-desc', dict.regTypeExistDesc);
-  setLanguageText('btn-submit-newapp', dict.btnSubmitNewApp);
   setLanguageText('btn-submit-existsetup', dict.btnSubmitExistSetup);
 }
 
+function toggleLanguage() {
+  currentLang = currentLang === 'en' ? 'tl' : 'en';
+
+  localStorage.setItem('palcon-language', currentLang);
+
+  applyLanguage();
+}
     // Shopping Cart Logic
     function addToCart(itemName, price) {
       const existing = cart.find(item => item.name === itemName);
