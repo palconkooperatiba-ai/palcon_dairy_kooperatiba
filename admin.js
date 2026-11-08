@@ -5,7 +5,6 @@
 // PALCON DAIRY ADMIN DASHBOARD
 // =============================================
 
-// SUPABASE CONFIGURATION
 const PALCON_SUPABASE_URL =
   "https://qekgglkivbnqvwzreeiq.supabase.co";
 
@@ -14,6 +13,8 @@ const PALCON_SUPABASE_KEY =
 
 const PALCON_ADMIN_UID =
   "678740cf-1282-422c-9c08-79be797988cc";
+
+const GALLERY_BUCKET = "palcon-gallery";
 
 const supabaseClient = window.supabase.createClient(
   PALCON_SUPABASE_URL,
@@ -61,7 +62,7 @@ document.querySelectorAll("[data-go]").forEach(function (button) {
 });
 
 // =============================================
-// ADMIN LOGIN ELEMENTS
+// ADMIN LOGIN
 // =============================================
 
 const loginSection = document.getElementById("adminLoginSection");
@@ -73,10 +74,6 @@ const loginStatus = document.getElementById("adminLoginStatus");
 const loginButton = document.getElementById("adminLoginBtn");
 const logoutButton = document.getElementById("adminLogoutBtn");
 
-// =============================================
-// SHOW AND HIDE DASHBOARD
-// =============================================
-
 function showAdminDashboard() {
   loginSection.classList.add("hidden");
   adminLayout.classList.remove("hidden");
@@ -84,6 +81,7 @@ function showAdminDashboard() {
   logoutButton.classList.remove("hidden");
 
   showSection("dashboard");
+  loadGalleryImages();
 }
 
 function showAdminLogin() {
@@ -93,19 +91,13 @@ function showAdminLogin() {
   logoutButton.classList.add("hidden");
 }
 
-// =============================================
-// VERIFY EXISTING ADMIN SESSION
-// =============================================
-
 async function verifyAdminSession() {
   showAdminLogin();
 
   const { data, error } =
     await supabaseClient.auth.getSession();
 
-  if (error || !data.session) {
-    return;
-  }
+  if (error || !data.session) return;
 
   if (data.session.user.id !== PALCON_ADMIN_UID) {
     await supabaseClient.auth.signOut();
@@ -114,10 +106,6 @@ async function verifyAdminSession() {
 
   showAdminDashboard();
 }
-logoutButton.classList.remove("hidden");
-// =============================================
-// ADMIN SIGN IN
-// =============================================
 
 loginForm.addEventListener("submit", async function (event) {
   event.preventDefault();
@@ -139,9 +127,7 @@ loginForm.addEventListener("submit", async function (event) {
         password: password
       });
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
     if (!data.user || data.user.id !== PALCON_ADMIN_UID) {
       await supabaseClient.auth.signOut();
@@ -151,9 +137,8 @@ loginForm.addEventListener("submit", async function (event) {
       );
     }
 
-    loginStatus.textContent = "Login successful!";
-
     loginForm.reset();
+    loginStatus.textContent = "Login successful!";
 
     showAdminDashboard();
 
@@ -187,7 +172,7 @@ logoutButton.addEventListener("click", async function () {
   showAdminLogin();
   loginStatus.textContent = "You have signed out.";
 });
-logoutButton.classList.add("hidden");
+
 // =============================================
 // GALLERY IMAGE PREVIEW
 // =============================================
@@ -203,6 +188,18 @@ const previewImage =
 
 const previewFileName =
   document.getElementById("previewFileName");
+
+const galleryUploadForm =
+  document.getElementById("galleryUploadForm");
+
+const galleryUploadStatus =
+  document.getElementById("galleryUploadStatus");
+
+const uploadImageBtn =
+  document.getElementById("uploadImageBtn");
+
+const galleryImageList =
+  document.getElementById("galleryImageList");
 
 let previewUrl = null;
 
@@ -228,24 +225,19 @@ galleryImage.addEventListener("change", function () {
 
   if (!allowedTypes.includes(file.type)) {
     alert("Please select a JPG, PNG, or WEBP image.");
-
     galleryImage.value = "";
     imagePreview.classList.add("hidden");
     return;
   }
 
-  const maxSize = 5 * 1024 * 1024;
-
-  if (file.size > maxSize) {
+  if (file.size > 5 * 1024 * 1024) {
     alert("Image is too large. Maximum file size is 5 MB.");
-
     galleryImage.value = "";
     imagePreview.classList.add("hidden");
     return;
   }
 
   previewUrl = URL.createObjectURL(file);
-
   previewImage.src = previewUrl;
   previewFileName.textContent = file.name;
 
@@ -253,24 +245,171 @@ galleryImage.addEventListener("change", function () {
 });
 
 // =============================================
-// GALLERY UPLOAD PLACEHOLDER
+// LOAD GALLERY IMAGES FROM SUPABASE
 // =============================================
 
-const galleryUploadForm =
-  document.getElementById("galleryUploadForm");
+async function loadGalleryImages() {
+  galleryImageList.innerHTML =
+    '<div class="empty-state"><p>Loading gallery images...</p></div>';
 
-const galleryUploadStatus =
-  document.getElementById("galleryUploadStatus");
+  const { data, error } = await supabaseClient
+    .storage
+    .from(GALLERY_BUCKET)
+    .list("", {
+      limit: 100,
+      sortBy: {
+        column: "created_at",
+        order: "desc"
+      }
+    });
 
-galleryUploadForm.addEventListener("submit", function (event) {
+  if (error) {
+    galleryImageList.innerHTML =
+      '<div class="empty-state"><p>Unable to load gallery images: ' +
+      escapeHTML(error.message) +
+      '</p></div>';
+    return;
+  }
+
+  const imageFiles = (data || []).filter(function (file) {
+    return file.name && !file.name.startsWith(".");
+  });
+
+  if (imageFiles.length === 0) {
+    galleryImageList.innerHTML =
+      '<div class="empty-state">' +
+      '<span>▧</span>' +
+      '<p>No gallery images uploaded yet.</p>' +
+      '</div>';
+    return;
+  }
+
+  galleryImageList.replaceChildren();
+
+  imageFiles.forEach(function (file) {
+    const result = supabaseClient
+      .storage
+      .from(GALLERY_BUCKET)
+      .getPublicUrl(file.name);
+
+    const card = document.createElement("article");
+    card.className = "gallery-card";
+
+    const image = document.createElement("img");
+    image.src = result.data.publicUrl;
+    image.alt = file.name;
+    image.loading = "lazy";
+
+    const caption = document.createElement("p");
+    caption.textContent = file.name;
+
+    card.appendChild(image);
+    card.appendChild(caption);
+
+    galleryImageList.appendChild(card);
+  });
+}
+
+// =============================================
+// UPLOAD IMAGE TO SUPABASE STORAGE
+// =============================================
+
+galleryUploadForm.addEventListener("submit", async function (event) {
   event.preventDefault();
 
-  galleryUploadStatus.textContent =
-    "Upload is not connected yet. We will connect Supabase Storage next.";
+  const title =
+    document.getElementById("galleryTitle").value.trim();
+
+  const file = galleryImage.files[0];
+
+  if (!title || !file) {
+    galleryUploadStatus.textContent =
+      "Please enter an image title and select a photo.";
+    return;
+  }
+
+  const { data: sessionData } =
+    await supabaseClient.auth.getSession();
+
+  if (
+    !sessionData.session ||
+    sessionData.session.user.id !== PALCON_ADMIN_UID
+  ) {
+    galleryUploadStatus.textContent =
+      "Your administrator session has expired. Please log in again.";
+    showAdminLogin();
+    return;
+  }
+
+  uploadImageBtn.disabled = true;
+  uploadImageBtn.textContent = "Uploading...";
+  galleryUploadStatus.textContent = "";
+
+  try {
+    const safeTitle = title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    const extension = file.name.split(".").pop().toLowerCase();
+
+    const filePath =
+      Date.now() + "-" + safeTitle + "." + extension;
+
+    const { error } = await supabaseClient
+      .storage
+      .from(GALLERY_BUCKET)
+      .upload(filePath, file, {
+        contentType: file.type,
+        upsert: false
+      });
+
+    if (error) throw error;
+
+    galleryUploadStatus.textContent =
+      "Image uploaded successfully!";
+
+    galleryUploadForm.reset();
+    imagePreview.classList.add("hidden");
+    previewImage.removeAttribute("src");
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      previewUrl = null;
+    }
+
+    await loadGalleryImages();
+
+  } catch (error) {
+    galleryUploadStatus.textContent =
+      "Upload failed: " + error.message;
+
+  } finally {
+    uploadImageBtn.disabled = false;
+    uploadImageBtn.textContent = "Upload Image";
+  }
 });
 
 // =============================================
-// INITIALIZE ADMIN DASHBOARD
+// SAFE TEXT DISPLAY
+// =============================================
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, function (character) {
+    const replacements = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    };
+
+    return replacements[character];
+  });
+}
+
+// =============================================
+// INITIALIZE
 // =============================================
 
 verifyAdminSession();
