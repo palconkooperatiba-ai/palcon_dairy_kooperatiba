@@ -81,6 +81,7 @@ function showAdminDashboard() {
   loginSection.classList.add("hidden");
   adminLayout.classList.remove("hidden");
   adminFooter.classList.remove("hidden");
+  logoutButton.classList.remove("hidden");
 
   showSection("dashboard");
 }
@@ -89,6 +90,7 @@ function showAdminLogin() {
   loginSection.classList.remove("hidden");
   adminLayout.classList.add("hidden");
   adminFooter.classList.add("hidden");
+  logoutButton.classList.add("hidden");
 }
 
 // =============================================
