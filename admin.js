@@ -112,7 +112,7 @@ async function verifyAdminSession() {
 
   showAdminDashboard();
 }
-
+logoutButton.classList.remove("hidden");
 // =============================================
 // ADMIN SIGN IN
 // =============================================
@@ -185,7 +185,7 @@ logoutButton.addEventListener("click", async function () {
   showAdminLogin();
   loginStatus.textContent = "You have signed out.";
 });
-
+logoutButton.classList.add("hidden");
 // =============================================
 // GALLERY IMAGE PREVIEW
 // =============================================
