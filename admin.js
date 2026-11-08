@@ -1,404 +1,274 @@
 
-:root {
-  --green: #173f35;
-  --green-light: #286451;
-  --accent: #f2a23a;
-  --background: #f4f7f5;
-  --text: #26352f;
-  --muted: #718078;
-  --border: #e1e9e4;
-}
+"use strict";
 
-* {
-  box-sizing: border-box;
-}
+// =============================================
+// PALCON DAIRY ADMIN DASHBOARD
+// =============================================
 
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  color: var(--text);
-  background: var(--background);
-}
+// SUPABASE CONFIGURATION
+const PALCON_SUPABASE_URL =
+  "https://qekgglkivbnqvwzreeiq.supabase.co";
 
-.admin-topbar {
-  height: 72px;
-  padding: 0 28px;
-  background: white;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
+const PALCON_SUPABASE_KEY =
+  "sb_publishable_V-mr3bKBBVeddJYyuHIsaw_DQ7d2gk0";
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--green);
-  text-decoration: none;
-}
+const PALCON_ADMIN_UID =
+  "678740cf-1282-422c-9c08-79be797988cc";
 
-.brand-logo,
-.admin-avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  background: var(--green);
-  color: white;
-  display: grid;
-  place-items: center;
-  font-weight: bold;
-  font-size: 21px;
-}
+const supabaseClient = window.supabase.createClient(
+  PALCON_SUPABASE_URL,
+  PALCON_SUPABASE_KEY
+);
 
-.brand strong,
-.brand small {
-  display: block;
-}
+// =============================================
+// DASHBOARD NAVIGATION
+// =============================================
 
-.brand small {
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 11px;
-}
+const navButtons = document.querySelectorAll(".nav-item");
+const sections = document.querySelectorAll(".admin-section");
 
-.admin-user {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  font-weight: bold;
-}
+function showSection(sectionName) {
+  sections.forEach(function (section) {
+    section.classList.add("hidden");
+  });
 
-.admin-avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: #e8f0eb;
-  color: var(--green);
-  font-size: 14px;
-}
+  const selectedSection = document.getElementById(
+    sectionName + "Section"
+  );
 
-.admin-layout {
-  display: flex;
-  min-height: calc(100vh - 120px);
-}
-
-.sidebar {
-  width: 235px;
-  flex-shrink: 0;
-  padding: 28px 16px;
-  background: white;
-  border-right: 1px solid var(--border);
-}
-
-.sidebar-label,
-.eyebrow {
-  color: var(--green-light);
-  font-size: 11px;
-  font-weight: bold;
-  letter-spacing: 1.5px;
-}
-
-.sidebar-label {
-  padding: 0 12px;
-  margin-bottom: 18px;
-}
-
-.nav-item {
-  display: block;
-  width: 100%;
-  padding: 13px 14px;
-  margin-bottom: 7px;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: #52635a;
-  text-align: left;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.nav-item span {
-  display: inline-block;
-  width: 27px;
-}
-
-.nav-item:hover,
-.nav-item.active {
-  background: #eaf2ed;
-  color: var(--green);
-  font-weight: bold;
-}
-
-.back-link {
-  display: block;
-  margin: 35px 12px 0;
-  color: var(--green-light);
-  text-decoration: none;
-  font-size: 13px;
-}
-
-.main-content {
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 38px;
-}
-
-h1 {
-  margin: 8px 0;
-  color: var(--green);
-  font-size: 30px;
-}
-
-h2 {
-  color: var(--green);
-}
-
-.subtitle,
-.panel-description {
-  color: var(--muted);
-  line-height: 1.6;
-  font-size: 14px;
-}
-
-.welcome-card {
-  margin-top: 28px;
-  padding: 30px;
-  border-radius: 14px;
-  background: var(--green);
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.welcome-card h2 {
-  margin-top: 0;
-  color: white;
-}
-
-.welcome-card p {
-  max-width: 550px;
-  line-height: 1.6;
-  color: #dce9e1;
-}
-
-.welcome-icon {
-  width: 75px;
-  height: 75px;
-  border-radius: 18px;
-  background: #ffffff20;
-  display: grid;
-  place-items: center;
-  font-size: 40px;
-  font-weight: bold;
-}
-
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-  margin-top: 24px;
-}
-
-.summary-card,
-.panel {
-  padding: 24px;
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-}
-
-.summary-card span {
-  display: block;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.summary-card strong {
-  display: block;
-  margin: 13px 0;
-  color: var(--green);
-  font-size: 18px;
-}
-
-.text-btn {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--green-light);
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.info-notice {
-  margin-top: 24px;
-  padding: 17px;
-  border-left: 4px solid var(--accent);
-  border-radius: 6px;
-  background: #fff8ec;
-  color: #69542e;
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-.panel {
-  margin-top: 25px;
-}
-
-.panel h2 {
-  margin-top: 0;
-  font-size: 20px;
-}
-
-.panel label {
-  display: block;
-  margin: 19px 0 8px;
-  font-size: 13px;
-  font-weight: bold;
-}
-
-.panel input,
-.panel textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #d6e0d9;
-  border-radius: 7px;
-  font: inherit;
-  background: white;
-}
-
-.panel input:focus,
-.panel textarea:focus {
-  outline: 2px solid #a8c8b5;
-  border-color: var(--green-light);
-}
-
-.primary-btn,
-.primary-link {
-  display: inline-block;
-  margin-top: 20px;
-  padding: 12px 20px;
-  border: 0;
-  border-radius: 7px;
-  background: var(--green);
-  color: white;
-  font-size: 14px;
-  font-weight: bold;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.primary-btn:hover,
-.primary-link:hover {
-  background: var(--green-light);
-}
-
-.form-status {
-  font-size: 13px;
-  color: var(--green-light);
-}
-
-.image-preview {
-  margin-top: 18px;
-  padding: 12px;
-  border: 1px dashed #b9cabe;
-  border-radius: 9px;
-}
-
-.image-preview img {
-  display: block;
-  max-width: 100%;
-  max-height: 260px;
-  margin: auto;
-  border-radius: 7px;
-}
-
-.image-preview p {
-  margin-bottom: 0;
-  color: var(--muted);
-  font-size: 12px;
-  text-align: center;
-}
-
-.gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 16px;
-  margin-top: 20px;
-}
-
-.empty-state {
-  grid-column: 1 / -1;
-  padding: 35px;
-  border: 1px dashed var(--border);
-  border-radius: 10px;
-  color: var(--muted);
-  text-align: center;
-}
-
-.empty-state span {
-  font-size: 32px;
-}
-
-.hidden {
-  display: none !important;
-}
-
-footer {
-  padding: 20px;
-  background: white;
-  border-top: 1px solid var(--border);
-  color: var(--muted);
-  text-align: center;
-  font-size: 12px;
-}
-
-@media (max-width: 800px) {
-  .admin-layout {
-    display: block;
+  if (selectedSection) {
+    selectedSection.classList.remove("hidden");
   }
 
-  .sidebar {
-    width: 100%;
-    padding: 12px;
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    border-right: 0;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .sidebar-label,
-  .back-link {
-    display: none;
-  }
-
-  .nav-item {
-    min-width: max-content;
-    width: auto;
-    margin: 0;
-  }
-
-  .main-content {
-    padding: 22px 16px;
-  }
-
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .welcome-card {
-    padding: 22px;
-  }
-
-  .welcome-icon {
-    display: none;
-  }
-
-  .admin-topbar {
-    padding: 0 15px;
-  }
+  navButtons.forEach(function (button) {
+    button.classList.toggle(
+      "active",
+      button.dataset.section === sectionName
+    );
+  });
 }
+
+navButtons.forEach(function (button) {
+  button.addEventListener("click", function () {
+    showSection(button.dataset.section);
+  });
+});
+
+document.querySelectorAll("[data-go]").forEach(function (button) {
+  button.addEventListener("click", function () {
+    showSection(button.dataset.go);
+  });
+});
+
+// =============================================
+// ADMIN LOGIN ELEMENTS
+// =============================================
+
+const loginSection = document.getElementById("adminLoginSection");
+const adminLayout = document.getElementById("adminLayout");
+const adminFooter = document.getElementById("adminFooter");
+
+const loginForm = document.getElementById("adminLoginForm");
+const loginStatus = document.getElementById("adminLoginStatus");
+const loginButton = document.getElementById("adminLoginBtn");
+const logoutButton = document.getElementById("adminLogoutBtn");
+
+// =============================================
+// SHOW AND HIDE DASHBOARD
+// =============================================
+
+function showAdminDashboard() {
+  loginSection.classList.add("hidden");
+  adminLayout.classList.remove("hidden");
+  adminFooter.classList.remove("hidden");
+
+  showSection("dashboard");
+}
+
+function showAdminLogin() {
+  loginSection.classList.remove("hidden");
+  adminLayout.classList.add("hidden");
+  adminFooter.classList.add("hidden");
+}
+
+// =============================================
+// VERIFY EXISTING ADMIN SESSION
+// =============================================
+
+async function verifyAdminSession() {
+  showAdminLogin();
+
+  const { data, error } =
+    await supabaseClient.auth.getSession();
+
+  if (error || !data.session) {
+    return;
+  }
+
+  if (data.session.user.id !== PALCON_ADMIN_UID) {
+    await supabaseClient.auth.signOut();
+    return;
+  }
+
+  showAdminDashboard();
+}
+
+// =============================================
+// ADMIN SIGN IN
+// =============================================
+
+loginForm.addEventListener("submit", async function (event) {
+  event.preventDefault();
+
+  const email =
+    document.getElementById("adminEmail").value.trim();
+
+  const password =
+    document.getElementById("adminPassword").value;
+
+  loginButton.disabled = true;
+  loginButton.textContent = "Signing in...";
+  loginStatus.textContent = "";
+
+  try {
+    const { data, error } =
+      await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data.user || data.user.id !== PALCON_ADMIN_UID) {
+      await supabaseClient.auth.signOut();
+
+      throw new Error(
+        "This account is not authorized as PALCON Administrator."
+      );
+    }
+
+    loginStatus.textContent = "Login successful!";
+
+    loginForm.reset();
+
+    showAdminDashboard();
+
+  } catch (error) {
+    loginStatus.textContent =
+      error.message || "Unable to sign in. Please try again.";
+
+  } finally {
+    loginButton.disabled = false;
+    loginButton.textContent = "Sign In";
+  }
+});
+
+// =============================================
+// ADMIN LOGOUT
+// =============================================
+
+logoutButton.addEventListener("click", async function () {
+  logoutButton.disabled = true;
+
+  const { error } =
+    await supabaseClient.auth.signOut();
+
+  logoutButton.disabled = false;
+
+  if (error) {
+    alert("Unable to log out. Please try again.");
+    return;
+  }
+
+  showAdminLogin();
+  loginStatus.textContent = "You have signed out.";
+});
+
+// =============================================
+// GALLERY IMAGE PREVIEW
+// =============================================
+
+const galleryImage =
+  document.getElementById("galleryImage");
+
+const imagePreview =
+  document.getElementById("imagePreview");
+
+const previewImage =
+  document.getElementById("previewImage");
+
+const previewFileName =
+  document.getElementById("previewFileName");
+
+let previewUrl = null;
+
+galleryImage.addEventListener("change", function () {
+  const file = galleryImage.files[0];
+
+  if (previewUrl) {
+    URL.revokeObjectURL(previewUrl);
+    previewUrl = null;
+  }
+
+  if (!file) {
+    imagePreview.classList.add("hidden");
+    previewImage.removeAttribute("src");
+    return;
+  }
+
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp"
+  ];
+
+  if (!allowedTypes.includes(file.type)) {
+    alert("Please select a JPG, PNG, or WEBP image.");
+
+    galleryImage.value = "";
+    imagePreview.classList.add("hidden");
+    return;
+  }
+
+  const maxSize = 5 * 1024 * 1024;
+
+  if (file.size > maxSize) {
+    alert("Image is too large. Maximum file size is 5 MB.");
+
+    galleryImage.value = "";
+    imagePreview.classList.add("hidden");
+    return;
+  }
+
+  previewUrl = URL.createObjectURL(file);
+
+  previewImage.src = previewUrl;
+  previewFileName.textContent = file.name;
+
+  imagePreview.classList.remove("hidden");
+});
+
+// =============================================
+// GALLERY UPLOAD PLACEHOLDER
+// =============================================
+
+const galleryUploadForm =
+  document.getElementById("galleryUploadForm");
+
+const galleryUploadStatus =
+  document.getElementById("galleryUploadStatus");
+
+galleryUploadForm.addEventListener("submit", function (event) {
+  event.preventDefault();
+
+  galleryUploadStatus.textContent =
+    "Upload is not connected yet. We will connect Supabase Storage next.";
+});
+
+// =============================================
+// INITIALIZE ADMIN DASHBOARD
+// =============================================
+
+verifyAdminSession();
