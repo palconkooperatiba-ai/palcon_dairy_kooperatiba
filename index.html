@@ -2724,6 +2724,68 @@ async function handleContactSubmit(e) {
     // 2. Initialize the Supabase helper
     const { createClient } = supabase;
     const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  
+// =============================================
+// LOAD PUBLISHED PALCON GALLERY IMAGES
+// =============================================
+
+async function loadPublicGallery() {
+  const galleryContainer = document.getElementById("supabase-gallery");
+
+  if (!galleryContainer) return;
+
+  const { data, error } = await _supabase
+    .from("gallery_images")
+    .select("id, title, description, file_path")
+    .eq("is_published", true)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Unable to load public gallery:", error.message);
+    return;
+  }
+
+  galleryContainer.replaceChildren();
+
+  data.forEach(function (item) {
+    const { data: imageData } = _supabase
+      .storage
+      .from("palcon-gallery")
+      .getPublicUrl(item.file_path);
+
+    const card = document.createElement("div");
+    card.className =
+      "bg-white rounded-2xl overflow-hidden shadow-sm border border-brand-100";
+
+    const image = document.createElement("img");
+    image.src = imageData.publicUrl;
+    image.alt = item.title;
+    image.className = "w-full h-48 object-cover";
+    image.loading = "lazy";
+
+    const content = document.createElement("div");
+    content.className = "p-4";
+
+    const title = document.createElement("h4");
+    title.className = "font-bold text-brand-900";
+    title.textContent = item.title;
+
+    const description = document.createElement("p");
+    description.className = "text-xs text-gray-500 mt-1";
+    description.textContent = item.description || "";
+
+    content.appendChild(title);
+    content.appendChild(description);
+    card.appendChild(image);
+    card.appendChild(content);
+
+    galleryContainer.appendChild(card);
+  });
+}
+
+// Load the published images
+loadPublicGallery();
+
 
 </script>
 </body>
