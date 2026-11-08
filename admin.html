@@ -1,0 +1,209 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PALCON Dairy | Admin Dashboard</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <header class="admin-topbar">
+    <a href="index.html" class="brand">
+      <span class="brand-logo">P</span>
+      <span>
+        <strong>PALCON DAIRY</strong>
+        <small>Cooperative Administration</small>
+      </span>
+    </a>
+
+    <div class="admin-user">
+      <span class="admin-avatar">A</span>
+      <span>Administrator</span>
+    </div>
+  </header>
+
+  <div class="admin-layout">
+
+    <aside class="sidebar">
+      <p class="sidebar-label">MAIN MENU</p>
+
+      <button class="nav-item active" data-section="dashboard">
+        <span>▦</span> Dashboard
+      </button>
+
+      <button class="nav-item" data-section="gallery">
+        <span>▧</span> Website Gallery
+      </button>
+
+      <button class="nav-item" data-section="members">
+        <span>♙</span> Members
+      </button>
+
+      <button class="nav-item" data-section="applications">
+        <span>▤</span> Applications
+      </button>
+
+      <a href="index.html" class="back-link">← Back to Website</a>
+    </aside>
+
+    <main class="main-content">
+
+      <!-- DASHBOARD SECTION -->
+      <section class="admin-section" id="dashboardSection">
+        <p class="eyebrow">ADMINISTRATION</p>
+        <h1>Dashboard Overview</h1>
+        <p class="subtitle">
+          Welcome to the PALCON Dairy Cooperative management workspace.
+        </p>
+
+        <div class="welcome-card">
+          <div>
+            <h2>Welcome, Administrator!</h2>
+            <p>
+              Manage website gallery images and cooperative records
+              from one workspace.
+            </p>
+          </div>
+          <div class="welcome-icon">P</div>
+        </div>
+
+        <div class="dashboard-grid">
+          <article class="summary-card">
+            <span>Website Gallery</span>
+            <strong>Image Management</strong>
+            <button class="text-btn" data-go="gallery">
+              Manage images →
+            </button>
+          </article>
+
+          <article class="summary-card">
+            <span>Member Records</span>
+            <strong>Members Directory</strong>
+            <button class="text-btn" data-go="members">
+              View members →
+            </button>
+          </article>
+
+          <article class="summary-card">
+            <span>Membership</span>
+            <strong>Applications</strong>
+            <button class="text-btn" data-go="applications">
+              View applications →
+            </button>
+          </article>
+        </div>
+
+        <div class="info-notice">
+          <strong>Development status:</strong>
+          This dashboard interface is being prepared for its secure
+          Supabase connection. Uploading and record management will
+          be enabled after the backend setup is verified.
+        </div>
+      </section>
+
+      <!-- GALLERY SECTION -->
+      <section class="admin-section hidden" id="gallerySection">
+        <p class="eyebrow">WEBSITE CONTENT</p>
+        <h1>Gallery Management</h1>
+        <p class="subtitle">
+          Upload and manage photos that will appear on the public PALCON website.
+        </p>
+
+        <div class="panel">
+          <h2>Upload New Image</h2>
+          <p class="panel-description">
+            Select a photo from your computer. You can preview it before
+            uploading.
+          </p>
+
+          <form id="galleryUploadForm">
+            <label for="galleryTitle">Image title</label>
+            <input
+              type="text"
+              id="galleryTitle"
+              placeholder="Example: PALCON Dairy Farm"
+              required
+            >
+
+            <label for="galleryDescription">Description</label>
+            <textarea
+              id="galleryDescription"
+              rows="3"
+              placeholder="Write a short description..."
+            ></textarea>
+
+            <label for="galleryImage">Choose image</label>
+            <input
+              type="file"
+              id="galleryImage"
+              accept="image/jpeg,image/png,image/webp"
+              required
+            >
+
+            <div id="imagePreview" class="image-preview hidden">
+              <img id="previewImage" alt="Selected gallery image preview">
+              <p id="previewFileName"></p>
+            </div>
+
+            <button type="submit" class="primary-btn" id="uploadImageBtn">
+              Upload Image
+            </button>
+
+            <p id="galleryUploadStatus" class="form-status" role="status"></p>
+          </form>
+        </div>
+
+        <div class="panel gallery-library">
+          <h2>Uploaded Gallery Images</h2>
+          <p class="panel-description">
+            Images saved to the website gallery will appear here.
+          </p>
+
+          <div id="galleryImageList" class="gallery-grid">
+            <div class="empty-state">
+              <span>▧</span>
+              <p>No gallery images loaded yet.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MEMBERS SECTION -->
+      <section class="admin-section hidden" id="membersSection">
+        <p class="eyebrow">MEMBER MANAGEMENT</p>
+        <h1>Members</h1>
+        <div class="panel">
+          <p>
+            The members directory will be connected to the existing
+            PALCON member database in a later development step.
+          </p>
+          <a href="members.html" class="primary-link">
+            Open Members Portal →
+          </a>
+        </div>
+      </section>
+
+      <!-- APPLICATIONS SECTION -->
+      <section class="admin-section hidden" id="applicationsSection">
+        <p class="eyebrow">MEMBERSHIP MANAGEMENT</p>
+        <h1>Membership Applications</h1>
+        <div class="panel">
+          <p>
+            Pending and submitted membership applications will be displayed
+            here after we connect the existing Supabase table.
+          </p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer>
+    PALCON Dairy Cooperative · Administration Portal
+  </footer>
+
+  <script src="admin.js"></script>
+</body>
+</html>
