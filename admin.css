@@ -587,3 +587,60 @@ footer {
   font-size: 12px;
   overflow-wrap: anywhere;
 }
+
+.gallery-card-content {
+  padding: 14px;
+}
+
+.gallery-card-content h3 {
+  margin: 0 0 8px;
+  color: var(--green);
+  font-size: 16px;
+}
+
+.gallery-card-content p {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.gallery-status {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 5px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.gallery-status.published {
+  background: #e5f5e9;
+  color: #23743d;
+}
+
+.gallery-status.unpublished {
+  background: #fff3dc;
+  color: #936315;
+}
+
+.gallery-action-btn,
+.gallery-delete-btn {
+  padding: 9px 12px;
+  margin: 3px 4px 3px 0;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.gallery-action-btn {
+  background: var(--green);
+  color: white;
+}
+
+.gallery-delete-btn {
+  background: #fff0ee;
+  color: #a13d36;
+}
