@@ -244,8 +244,9 @@ galleryImage.addEventListener("change", function () {
   imagePreview.classList.remove("hidden");
 });
 
+
 // =============================================
-// LOAD GALLERY IMAGES FROM SUPABASE
+// LOAD GALLERY IMAGES FROM SUPABASE DATABASE
 // =============================================
 
 async function loadGalleryImages() {
@@ -253,65 +254,183 @@ async function loadGalleryImages() {
     '<div class="empty-state"><p>Loading gallery images...</p></div>';
 
   const { data, error } = await supabaseClient
-    .storage
-    .from(GALLERY_BUCKET)
-    .list("", {
-      limit: 100,
-      sortBy: {
-        column: "created_at",
-        order: "desc"
-      }
-    });
+    .from("gallery_images")
+    .select("*")
+    .order("created_at", { ascending: false });
 
   if (error) {
     galleryImageList.innerHTML =
-      '<div class="empty-state"><p>Unable to load gallery images: ' +
+      '<div class="empty-state"><p>Unable to load images: ' +
       escapeHTML(error.message) +
       '</p></div>';
     return;
   }
 
-  const imageFiles = (data || []).filter(function (file) {
-    return file.name && !file.name.startsWith(".");
-  });
-
-  if (imageFiles.length === 0) {
+  if (!data || data.length === 0) {
     galleryImageList.innerHTML =
-      '<div class="empty-state">' +
-      '<span>▧</span>' +
-      '<p>No gallery images uploaded yet.</p>' +
-      '</div>';
+      '<div class="empty-state"><span>▧</span><p>No gallery images uploaded yet.</p></div>';
     return;
   }
 
   galleryImageList.replaceChildren();
 
-  imageFiles.forEach(function (file) {
+  data.forEach(function (item) {
     const result = supabaseClient
       .storage
       .from(GALLERY_BUCKET)
-      .getPublicUrl(file.name);
+      .getPublicUrl(item.file_path);
 
     const card = document.createElement("article");
     card.className = "gallery-card";
 
     const image = document.createElement("img");
     image.src = result.data.publicUrl;
-    image.alt = file.name;
+    image.alt = item.title;
     image.loading = "lazy";
 
-    const caption = document.createElement("p");
-    caption.textContent = file.name;
+    const content = document.createElement("div");
+    content.className = "gallery-card-content";
+
+    const title = document.createElement("h3");
+    title.textContent = item.title;
+
+    const description = document.createElement("p");
+    description.textContent = item.description || "No description";
+
+    const status = document.createElement("span");
+    status.className = item.is_published
+      ? "gallery-status published"
+      : "gallery-status unpublished";
+    status.textContent = item.is_published
+      ? "Published"
+      : "Unpublished";
+
+    const publishButton = document.createElement("button");
+    publishButton.type = "button";
+    publishButton.className = "gallery-action-btn";
+    publishButton.textContent = item.is_published
+      ? "Unpublish"
+      : "Publish";
+
+    publishButton.addEventListener("click", function () {
+      updateGalleryStatus(item.id, !item.is_published);
+    });
+
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "gallery-delete-btn";
+    deleteButton.textContent = "Delete";
+
+    deleteButton.addEventListener("click", function () {
+      deleteGalleryImage(item.id, item.file_path, item.title);
+    });
+
+    content.appendChild(title);
+    content.appendChild(description);
+    content.appendChild(status);
+    content.appendChild(publishButton);
+    content.appendChild(deleteButton);
 
     card.appendChild(image);
-    card.appendChild(caption);
+    card.appendChild(content);
 
     galleryImageList.appendChild(card);
   });
 }
 
 // =============================================
-// UPLOAD IMAGE TO SUPABASE STORAGE
+// PUBLISH / UNPUBLISH IMAGE
+// =============================================
+
+async function updateGalleryStatus(imageId, publish) {
+  const { data: sessionData } =
+    await supabaseClient.auth.getSession();
+
+  if (
+    !sessionData.session ||
+    sessionData.session.user.id !== PALCON_ADMIN_UID
+  ) {
+    alert("Administrator login required.");
+    showAdminLogin();
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("gallery_images")
+    .update({ is_published: publish })
+    .eq("id", imageId);
+
+  if (error) {
+    alert("Unable to update image status: " + error.message);
+    return;
+  }
+
+  galleryUploadStatus.textContent = publish
+    ? "Image published successfully!"
+    : "Image unpublished successfully!";
+
+  await loadGalleryImages();
+}
+
+// =============================================
+// DELETE GALLERY IMAGE
+// =============================================
+
+async function deleteGalleryImage(imageId, filePath, title) {
+  const confirmed = confirm(
+    'Are you sure you want to permanently delete "' +
+    title +
+    '"? This cannot be undone.'
+  );
+
+  if (!confirmed) return;
+
+  const { data: sessionData } =
+    await supabaseClient.auth.getSession();
+
+  if (
+    !sessionData.session ||
+    sessionData.session.user.id !== PALCON_ADMIN_UID
+  ) {
+    alert("Administrator login required.");
+    showAdminLogin();
+    return;
+  }
+
+  // Delete the database record first.
+  const { error: databaseError } = await supabaseClient
+    .from("gallery_images")
+    .delete()
+    .eq("id", imageId);
+
+  if (databaseError) {
+    alert("Unable to delete gallery record: " + databaseError.message);
+    return;
+  }
+
+  // Delete the actual image file from Storage.
+  const { error: storageError } = await supabaseClient
+    .storage
+    .from(GALLERY_BUCKET)
+    .remove([filePath]);
+
+  if (storageError) {
+    alert(
+      "Gallery record deleted, but the image file could not be removed. " +
+      "Please check Storage: " + storageError.message
+    );
+    await loadGalleryImages();
+    return;
+  }
+
+  galleryUploadStatus.textContent =
+    "Gallery image permanently deleted.";
+
+  await loadGalleryImages();
+}
+
+// =============================================
+// UPLOAD IMAGE TO SUPABASE STORAGE + DATABASE
 // =============================================
 
 galleryUploadForm.addEventListener("submit", async function (event) {
@@ -319,6 +438,9 @@ galleryUploadForm.addEventListener("submit", async function (event) {
 
   const title =
     document.getElementById("galleryTitle").value.trim();
+
+  const description =
+    document.getElementById("galleryDescription").value.trim();
 
   const file = galleryImage.files[0];
 
@@ -336,8 +458,21 @@ galleryUploadForm.addEventListener("submit", async function (event) {
     sessionData.session.user.id !== PALCON_ADMIN_UID
   ) {
     galleryUploadStatus.textContent =
-      "Your administrator session has expired. Please log in again.";
+      "Please log in again as administrator.";
     showAdminLogin();
+    return;
+  }
+
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp"
+  ];
+
+  if (!allowedTypes.includes(file.type) ||
+      file.size > 5 * 1024 * 1024) {
+    galleryUploadStatus.textContent =
+      "Use JPG, PNG, or WEBP images up to 5 MB.";
     return;
   }
 
@@ -345,29 +480,52 @@ galleryUploadForm.addEventListener("submit", async function (event) {
   uploadImageBtn.textContent = "Uploading...";
   galleryUploadStatus.textContent = "";
 
+  let uploadedFilePath = null;
+
   try {
     const safeTitle = title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
+      .replace(/^-|-$/g, "") || "gallery-image";
 
     const extension = file.name.split(".").pop().toLowerCase();
 
-    const filePath =
+    uploadedFilePath =
       Date.now() + "-" + safeTitle + "." + extension;
 
-    const { error } = await supabaseClient
+    // Upload the actual image.
+    const { error: uploadError } = await supabaseClient
       .storage
       .from(GALLERY_BUCKET)
-      .upload(filePath, file, {
+      .upload(uploadedFilePath, file, {
         contentType: file.type,
         upsert: false
       });
 
-    if (error) throw error;
+    if (uploadError) throw uploadError;
+
+    // Save its information in the gallery database.
+    const { error: insertError } = await supabaseClient
+      .from("gallery_images")
+      .insert({
+        title: title,
+        description: description,
+        file_path: uploadedFilePath,
+        is_published: false
+      });
+
+    if (insertError) {
+      // Clean up the uploaded file if database saving fails.
+      await supabaseClient
+        .storage
+        .from(GALLERY_BUCKET)
+        .remove([uploadedFilePath]);
+
+      throw insertError;
+    }
 
     galleryUploadStatus.textContent =
-      "Image uploaded successfully!";
+      "Image uploaded successfully! It is currently unpublished.";
 
     galleryUploadForm.reset();
     imagePreview.classList.add("hidden");
