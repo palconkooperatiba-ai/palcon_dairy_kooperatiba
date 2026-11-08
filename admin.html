@@ -23,8 +23,52 @@
       <span>Administrator</span>
     </div>
   </header>
+<button type="button" id="adminLogoutBtn" class="logout-btn">
+  Logout
+</button>
+<!-- PALCON ADMIN LOGIN -->
+<section id="adminLoginSection" class="login-wrapper">
+  <div class="login-card">
+    <div class="login-logo">P</div>
+    <p class="eyebrow">PALCON DAIRY COOPERATIVE</p>
+    <h1>Administrator Login</h1>
+    <p class="login-description">
+      Sign in using your authorized PALCON administrator account.
+    </p>
 
-  <div class="admin-layout">
+    <form id="adminLoginForm">
+      <label for="adminEmail">Email Address</label>
+      <input
+        type="email"
+        id="adminEmail"
+        placeholder="Enter administrator email"
+        autocomplete="username"
+        required
+      >
+
+      <label for="adminPassword">Password</label>
+      <input
+        type="password"
+        id="adminPassword"
+        placeholder="Enter your password"
+        autocomplete="current-password"
+        required
+      >
+
+      <button type="submit" class="primary-btn" id="adminLoginBtn">
+        Sign In
+      </button>
+
+      <p id="adminLoginStatus" class="form-status" role="status"></p>
+    </form>
+
+    <a href="index.html" class="login-back-link">
+      ← Back to PALCON Website
+    </a>
+  </div>
+</section>
+
+  <div class="admin-layout hidden" id="adminLayout">
 
     <aside class="sidebar">
       <p class="sidebar-label">MAIN MENU</p>
@@ -200,7 +244,7 @@
     </main>
   </div>
 
-  <footer>
+  <footer id="adminFooter" class="hidden">
     PALCON Dairy Cooperative · Administration Portal
   </footer>
 
