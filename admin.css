@@ -486,3 +486,83 @@ footer {
 .logout-btn:hover {
   background: #fff1ef;
 }
+
+/* ADMIN LOGIN */
+
+.login-wrapper {
+  min-height: calc(100vh - 72px);
+  display: grid;
+  place-items: center;
+  padding: 25px 15px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 430px;
+  padding: 35px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  box-shadow: 0 12px 35px #173f3510;
+}
+
+.login-logo {
+  width: 58px;
+  height: 58px;
+  margin-bottom: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: var(--green);
+  color: white;
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.login-card h1 {
+  font-size: 27px;
+}
+
+.login-description {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.login-card label {
+  display: block;
+  margin: 20px 0 8px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.login-card input {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-size: 14px;
+}
+
+.login-card .primary-btn {
+  width: 100%;
+}
+
+.login-back-link {
+  display: block;
+  margin-top: 20px;
+  color: var(--green-light);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.logout-btn {
+  padding: 9px 13px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: white;
+  color: #a13d36;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 12px;
+}
