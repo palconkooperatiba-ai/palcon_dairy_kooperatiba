@@ -229,17 +229,54 @@
         </div>
       </section>
 
-      <!-- APPLICATIONS SECTION -->
-      <section class="admin-section hidden" id="applicationsSection">
-        <p class="eyebrow">MEMBERSHIP MANAGEMENT</p>
-        <h1>Membership Applications</h1>
-        <div class="panel">
-          <p>
-            Pending and submitted membership applications will be displayed
-            here after we connect the existing Supabase table.
-          </p>
-        </div>
-      </section>
+     
+<!-- APPLICATIONS SECTION -->
+<section class="admin-section hidden" id="applicationsSection">
+  <p class="eyebrow">MEMBERSHIP MANAGEMENT</p>
+  <h1>Membership Applications</h1>
+  <p class="subtitle">
+    Review and manage submitted PALCON membership applications.
+  </p>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h2>Submitted Applications</h2>
+        <p class="panel-description">
+          Review applications before approving or rejecting them.
+        </p>
+      </div>
+
+      <button type="button" class="primary-btn" id="refreshApplicationsBtn">
+        Refresh
+      </button>
+    </div>
+
+    <p id="applicationsStatus" class="form-status" role="status">
+      Applications are ready to be connected.
+    </p>
+
+    <div class="table-responsive">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Applicant</th>
+            <th>Contact Number</th>
+            <th>Membership Category</th>
+            <th>Date Submitted</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="applicationsTableBody">
+          <tr>
+            <td colspan="6">Applications will appear here.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
 
     </main>
   </div>
