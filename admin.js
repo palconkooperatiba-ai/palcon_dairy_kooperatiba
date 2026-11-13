@@ -82,6 +82,7 @@ function showAdminDashboard() {
 
   showSection("dashboard");
   loadGalleryImages();
+  loadApplications();
 }
 
 function showAdminLogin() {
@@ -337,6 +338,113 @@ async function loadGalleryImages() {
     galleryImageList.appendChild(card);
   });
 }
+
+// =============================================
+// LOAD MEMBERSHIP APPLICATIONS
+// =============================================
+
+const applicationsTableBody =
+  document.getElementById("applicationsTableBody");
+
+const applicationsStatus =
+  document.getElementById("applicationsStatus");
+
+const refreshApplicationsBtn =
+  document.getElementById("refreshApplicationsBtn");
+
+async function loadApplications() {
+  applicationsTableBody.innerHTML =
+    '<tr><td colspan="6">Loading applications...</td></tr>';
+
+  applicationsStatus.textContent =
+    "Loading membership applications...";
+
+  const { data, error } =
+    await supabaseClient.functions.invoke(
+      "admin-membership-applications"
+    );
+
+  if (error) {
+    applicationsTableBody.innerHTML =
+      '<tr><td colspan="6">Unable to load applications.</td></tr>';
+
+    applicationsStatus.textContent =
+      "Unable to load applications: " + error.message;
+    return;
+  }
+
+  if (!data || !data.success) {
+    applicationsTableBody.innerHTML =
+      '<tr><td colspan="6">Unable to load applications.</td></tr>';
+
+    applicationsStatus.textContent =
+      data?.error || "Unable to load applications.";
+    return;
+  }
+
+  const applications = data.applications || [];
+
+  applicationsTableBody.replaceChildren();
+
+  if (applications.length === 0) {
+    applicationsTableBody.innerHTML =
+      '<tr><td colspan="6">No membership applications found.</td></tr>';
+
+    applicationsStatus.textContent =
+      "No membership applications have been submitted yet.";
+    return;
+  }
+
+  applications.forEach(function (application) {
+    const row = document.createElement("tr");
+
+    const applicantCell = document.createElement("td");
+    applicantCell.textContent =
+      application.full_name || "—";
+
+    const contactCell = document.createElement("td");
+    contactCell.textContent =
+      application.mobile_phone || "—";
+
+    const categoryCell = document.createElement("td");
+    categoryCell.textContent =
+      application.membership_category || "—";
+
+    const dateCell = document.createElement("td");
+
+    const submittedDate = application.created_at
+      ? new Date(application.created_at)
+      : null;
+
+    dateCell.textContent =
+      submittedDate && !isNaN(submittedDate.getTime())
+        ? submittedDate.toLocaleDateString()
+        : "—";
+
+    const statusCell = document.createElement("td");
+    statusCell.textContent = application.status || "pending";
+
+    const actionCell = document.createElement("td");
+    actionCell.textContent = "For review";
+
+    row.appendChild(applicantCell);
+    row.appendChild(contactCell);
+    row.appendChild(categoryCell);
+    row.appendChild(dateCell);
+    row.appendChild(statusCell);
+    row.appendChild(actionCell);
+
+    applicationsTableBody.appendChild(row);
+  });
+
+  applicationsStatus.textContent =
+    applications.length + " application(s) loaded successfully.";
+}
+
+// Refresh Applications button
+refreshApplicationsBtn.addEventListener("click", function () {
+  loadApplications();
+});
 
 // =============================================
 // PUBLISH / UNPUBLISH IMAGE
