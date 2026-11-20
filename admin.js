@@ -82,8 +82,10 @@ function showAdminDashboard() {
 
   showSection("dashboard");
   loadGalleryImages();
+  loadApplications();
+  loadMembers();
+  loadMemberLinkRequests();
 }
-
 function showAdminLogin() {
   loginSection.classList.remove("hidden");
   adminLayout.classList.add("hidden");
@@ -339,6 +341,113 @@ async function loadGalleryImages() {
 }
 
 // =============================================
+// LOAD MEMBERSHIP APPLICATIONS
+// =============================================
+
+const applicationsTableBody =
+  document.getElementById("applicationsTableBody");
+
+const applicationsStatus =
+  document.getElementById("applicationsStatus");
+
+const refreshApplicationsBtn =
+  document.getElementById("refreshApplicationsBtn");
+
+async function loadApplications() {
+  applicationsTableBody.innerHTML =
+    '<tr><td colspan="6">Loading applications...</td></tr>';
+
+  applicationsStatus.textContent =
+    "Loading membership applications...";
+
+  const { data, error } =
+    await supabaseClient.functions.invoke(
+      "admin-membership-applications"
+    );
+
+  if (error) {
+    applicationsTableBody.innerHTML =
+      '<tr><td colspan="6">Unable to load applications.</td></tr>';
+
+    applicationsStatus.textContent =
+      "Unable to load applications: " + error.message;
+    return;
+  }
+
+  if (!data || !data.success) {
+    applicationsTableBody.innerHTML =
+      '<tr><td colspan="6">Unable to load applications.</td></tr>';
+
+    applicationsStatus.textContent =
+      data?.error || "Unable to load applications.";
+    return;
+  }
+
+  const applications = data.applications || [];
+
+  applicationsTableBody.replaceChildren();
+
+  if (applications.length === 0) {
+    applicationsTableBody.innerHTML =
+      '<tr><td colspan="6">No membership applications found.</td></tr>';
+
+    applicationsStatus.textContent =
+      "No membership applications have been submitted yet.";
+    return;
+  }
+
+  applications.forEach(function (application) {
+    const row = document.createElement("tr");
+
+    const applicantCell = document.createElement("td");
+    applicantCell.textContent =
+      application.full_name || "—";
+
+    const contactCell = document.createElement("td");
+    contactCell.textContent =
+      application.mobile_phone || "—";
+
+    const categoryCell = document.createElement("td");
+    categoryCell.textContent =
+      application.membership_category || "—";
+
+    const dateCell = document.createElement("td");
+
+    const submittedDate = application.created_at
+      ? new Date(application.created_at)
+      : null;
+
+    dateCell.textContent =
+      submittedDate && !isNaN(submittedDate.getTime())
+        ? submittedDate.toLocaleDateString()
+        : "—";
+
+    const statusCell = document.createElement("td");
+    statusCell.textContent = application.status || "pending";
+
+    const actionCell = document.createElement("td");
+    actionCell.textContent = "For review";
+
+    row.appendChild(applicantCell);
+    row.appendChild(contactCell);
+    row.appendChild(categoryCell);
+    row.appendChild(dateCell);
+    row.appendChild(statusCell);
+    row.appendChild(actionCell);
+
+    applicationsTableBody.appendChild(row);
+  });
+
+  applicationsStatus.textContent =
+    applications.length + " application(s) loaded successfully.";
+}
+
+// Refresh Applications button
+refreshApplicationsBtn.addEventListener("click", function () {
+  loadApplications();
+});
+
+// =============================================
 // PUBLISH / UNPUBLISH IMAGE
 // =============================================
 
@@ -563,6 +672,157 @@ function escapeHTML(value) {
     };
 
     return replacements[character];
+  });
+}
+
+// =============================================
+// MEMBERS DIRECTORY
+// =============================================
+
+async function loadMembers() {
+  const tableBody = document.getElementById("membersTableBody");
+  const totalCount = document.getElementById("totalMembersCount");
+  const activeCount = document.getElementById("activeMembersCount");
+  const pendingCount = document.getElementById("pendingMembersCount");
+
+  if (!tableBody) return;
+
+  tableBody.innerHTML =
+    '<tr><td colspan="4">Loading members...</td></tr>';
+
+  try {
+    const { data: members, error } = await supabaseClient
+      .from("members")
+      .select("member_id, full_name, status, auth_user_id")
+      .order("member_id", { ascending: true });
+
+    if (error) throw error;
+
+    totalCount.textContent = members.length;
+
+    activeCount.textContent = members.filter(
+      member => member.status === "active"
+    ).length;
+
+    pendingCount.textContent = members.filter(
+      member => member.status === "pending_verification"
+    ).length;
+
+    if (members.length === 0) {
+      tableBody.innerHTML =
+        '<tr><td colspan="4">No members found.</td></tr>';
+      return;
+    }
+
+    tableBody.innerHTML = members.map(member => `
+      <tr>
+        <td>${escapeHTML(member.member_id)}</td>
+        <td>${escapeHTML(member.full_name)}</td>
+        <td>${escapeHTML(member.status)}</td>
+        <td>${member.auth_user_id ? "Linked" : "Not linked"}</td>
+      </tr>
+    `).join("");
+
+  } catch (error) {
+    console.error("Load members error:", error);
+
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="4">
+          Unable to load members: ${escapeHTML(error.message)}
+        </td>
+      </tr>
+    `;
+  }
+}
+
+ // =============================================
+ // ACCOUNT LINKING REQUESTS
+ // =============================================
+
+async function loadMemberLinkRequests() {
+  const tableBody = document.getElementById("memberLinkRequestsBody");
+
+  if (!tableBody) return;
+
+  tableBody.innerHTML =
+    '<tr><td colspan="5">Loading requests...</td></tr>';
+
+  try {
+    const { data: sessionData, error: sessionError } =
+      await supabaseClient.auth.getSession();
+
+    if (sessionError) throw sessionError;
+
+    const session = sessionData.session;
+
+    if (!session) {
+      throw new Error("Please log in again.");
+    }
+
+    if (session.user.id !== PALCON_ADMIN_UID) {
+      throw new Error("Administrator access required.");
+    }
+
+    const response = await fetch(
+      PALCON_SUPABASE_URL + "/functions/v1/bright-service",
+      {
+        method: "GET",
+        headers: {
+          "Authorization": "Bearer " + session.access_token,
+          "apikey": PALCON_SUPABASE_KEY
+        }
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Unable to load requests.");
+    }
+
+    const requests = result.requests || [];
+
+    if (requests.length === 0) {
+      tableBody.innerHTML =
+        '<tr><td colspan="5">No pending account-link requests.</td></tr>';
+      return;
+    }
+
+    tableBody.innerHTML = requests.map(request => `
+      <tr>
+        <td>${escapeHTML(request.submitted_member_id)}</td>
+        <td>${escapeHTML(request.submitted_full_name)}</td>
+        <td>${escapeHTML(request.submitted_contact_number)}</td>
+        <td>${escapeHTML(new Date(request.created_at).toLocaleString())}</td>
+        <td>${escapeHTML(request.status)}</td>
+      </tr>
+    `).join("");
+
+  } catch (error) {
+    console.error("Load member link requests error:", error);
+
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="5">
+          Unable to load requests: ${escapeHTML(error.message)}
+        </td>
+      </tr>
+    `;
+  }
+}
+
+// Search members
+const memberSearch = document.getElementById("memberSearch");
+
+if (memberSearch) {
+  memberSearch.addEventListener("input", function () {
+    const searchValue = this.value.toLowerCase();
+
+    document.querySelectorAll("#membersTableBody tr").forEach(row => {
+      row.style.display = row.textContent.toLowerCase()
+        .includes(searchValue) ? "" : "none";
+    });
   });
 }
 
