@@ -746,7 +746,7 @@ async function loadMemberLinkRequests() {
   if (!tableBody) return;
 
   tableBody.innerHTML =
-    '<tr><td colspan="5">Loading requests...</td></tr>';
+   '<tr><td colspan="6">Loading requests...</td></tr>';
 
   try {
     const { data: sessionData, error: sessionError } =
@@ -783,33 +783,149 @@ async function loadMemberLinkRequests() {
 
     const requests = result.requests || [];
 
-    if (requests.length === 0) {
-      tableBody.innerHTML =
-        '<tr><td colspan="5">No pending account-link requests.</td></tr>';
+   
+if (requests.length === 0) {
+  tableBody.innerHTML =
+    '<tr><td colspan="6">No pending account-link requests.</td></tr>';
+  return;
+}
+
+tableBody.innerHTML = requests.map(request => `
+  <tr>
+    <td>${escapeHTML(request.submitted_member_id)}</td>
+    <td>${escapeHTML(request.submitted_full_name)}</td>
+    <td>${escapeHTML(request.submitted_contact_number)}</td>
+    <td>${escapeHTML(new Date(request.created_at).toLocaleString())}</td>
+    <td>${escapeHTML(request.status)}</td>
+    <td>
+      <button
+        type="button"
+        class="approve-link-btn"
+        data-request-id="${escapeHTML(request.id)}">
+        Approve
+      </button>
+      <button
+        type="button"
+        class="reject-link-btn"
+        data-request-id="${escapeHTML(request.id)}">
+        Reject
+      </button>
+    </td>
+  </tr>
+`).join("");
+
+} catch (error) {
+  console.error("Load member link requests error:", error);
+
+  tableBody.innerHTML = `
+    <tr>
+      <td colspan="6">
+        Unable to load requests: ${escapeHTML(error.message)}
+      </td>
+    </tr>
+  `;
+}
+}
+
+// =============================================
+// APPROVE / REJECT MEMBER LINK REQUESTS
+// =============================================
+
+const linkRequestsTable = document.getElementById(
+  "memberLinkRequestsBody"
+);
+
+if (
+  linkRequestsTable &&
+  !linkRequestsTable.dataset.reviewHandlerAttached
+) {
+  linkRequestsTable.dataset.reviewHandlerAttached = "true";
+
+  linkRequestsTable.addEventListener("click", async (event) => {
+    const button = event.target.closest(
+      ".approve-link-btn, .reject-link-btn"
+    );
+
+    if (!button) return;
+
+    const requestId = button.dataset.requestId;
+    const decision = button.classList.contains("approve-link-btn")
+      ? "approved"
+      : "rejected";
+
+    if (!requestId) return;
+
+    if (
+      decision === "approved" &&
+      !confirm(
+        "Approve this request? Make sure you have verified the member's identity using official PALCON records."
+      )
+    ) {
       return;
     }
 
-    tableBody.innerHTML = requests.map(request => `
-      <tr>
-        <td>${escapeHTML(request.submitted_member_id)}</td>
-        <td>${escapeHTML(request.submitted_full_name)}</td>
-        <td>${escapeHTML(request.submitted_contact_number)}</td>
-        <td>${escapeHTML(new Date(request.created_at).toLocaleString())}</td>
-        <td>${escapeHTML(request.status)}</td>
-      </tr>
-    `).join("");
+    let reviewNotes = "";
 
-  } catch (error) {
-    console.error("Load member link requests error:", error);
+    if (decision === "rejected") {
+      const notes = prompt("Reason for rejection (optional):");
 
-    tableBody.innerHTML = `
-      <tr>
-        <td colspan="5">
-          Unable to load requests: ${escapeHTML(error.message)}
-        </td>
-      </tr>
-    `;
-  }
+      if (notes === null) return;
+
+      reviewNotes = notes.trim();
+    }
+
+    try {
+      button.disabled = true;
+
+      const { data: sessionData, error: sessionError } =
+        await supabaseClient.auth.getSession();
+
+      if (sessionError) throw sessionError;
+
+      const session = sessionData.session;
+
+      if (!session || session.user.id !== PALCON_ADMIN_UID) {
+        throw new Error("Administrator access required.");
+      }
+
+      const response = await fetch(
+        PALCON_SUPABASE_URL + "/functions/v1/bright-service",
+        {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + session.access_token,
+            "apikey": PALCON_SUPABASE_KEY,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            action: "review",
+            request_id: requestId,
+            decision: decision,
+            review_notes: reviewNotes
+          })
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Unable to review request.");
+      }
+
+      alert(result.message || "Request reviewed successfully.");
+
+      await loadMemberLinkRequests();
+
+      if (decision === "approved") {
+        await loadMembers();
+      }
+
+    } catch (error) {
+      console.error("Review request error:", error);
+      alert(error.message || "Something went wrong.");
+      button.disabled = false;
+    }
+  });
 }
 
 // Search members
