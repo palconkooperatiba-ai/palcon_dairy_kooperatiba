@@ -214,32 +214,143 @@
         </div>
       </section>
 
-      <!-- MEMBERS SECTION -->
-      <section class="admin-section hidden" id="membersSection">
-        <p class="eyebrow">MEMBER MANAGEMENT</p>
-        <h1>Members</h1>
-        <div class="panel">
-          <p>
-            The members directory will be connected to the existing
-            PALCON member database in a later development step.
-          </p>
-          <a href="members.html" class="primary-link">
-            Open Members Portal →
-          </a>
-        </div>
-      </section>
+      
 
-      <!-- APPLICATIONS SECTION -->
-      <section class="admin-section hidden" id="applicationsSection">
-        <p class="eyebrow">MEMBERSHIP MANAGEMENT</p>
-        <h1>Membership Applications</h1>
-        <div class="panel">
-          <p>
-            Pending and submitted membership applications will be displayed
-            here after we connect the existing Supabase table.
-          </p>
-        </div>
-      </section>
+<!-- MEMBERS SECTION -->
+<section class="admin-section hidden" id="membersSection">
+  <p class="eyebrow">MEMBER MANAGEMENT</p>
+  <h1>Members</h1>
+
+  <!-- EXISTING MEMBERS DIRECTORY -->
+  <div class="panel">
+    <div class="members-toolbar">
+      <div>
+        <h2>PALCON Members Directory</h2>
+        <p>Registered cooperative members</p>
+      </div>
+
+      <input
+        type="search"
+        id="memberSearch"
+        placeholder="Search Member ID or Name..."
+      >
+    </div>
+
+    <div class="members-summary">
+      <div>
+        <strong id="totalMembersCount">0</strong>
+        <span>Total Members</span>
+      </div>
+      <div>
+        <strong id="activeMembersCount">0</strong>
+        <span>Active Members</span>
+      </div>
+      <div>
+        <strong id="pendingMembersCount">0</strong>
+        <span>Pending Verification</span>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Member ID</th>
+            <th>Full Name</th>
+            <th>Status</th>
+<th>Action</th>
+            <th>Account</th>
+          </tr>
+        </thead>
+        <tbody id="membersTableBody">
+          <tr>
+            <td colspan="4">Loading members...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ACCOUNT LINKING REQUESTS -->
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h2>Account Linking Requests</h2>
+        <p class="panel-description">
+          Review requests from existing PALCON members
+          who want to connect their online accounts.
+        </p>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Member ID</th>
+            <th>Submitted Name</th>
+            <th>Contact Number</th>
+            <th>Date Submitted</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="memberLinkRequestsBody">
+          <tr>
+            <td colspan="6">Requests will appear here.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+     
+<!-- APPLICATIONS SECTION -->
+<section class="admin-section hidden" id="applicationsSection">
+  <p class="eyebrow">MEMBERSHIP MANAGEMENT</p>
+  <h1>Membership Applications</h1>
+  <p class="subtitle">
+    Review and manage submitted PALCON membership applications.
+  </p>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h2>Submitted Applications</h2>
+        <p class="panel-description">
+          Review applications before approving or rejecting them.
+        </p>
+      </div>
+
+      <button type="button" class="primary-btn" id="refreshApplicationsBtn">
+        Refresh
+      </button>
+    </div>
+
+    <p id="applicationsStatus" class="form-status" role="status">
+      Applications are ready to be connected.
+    </p>
+
+    <div class="table-responsive">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Applicant</th>
+            <th>Contact Number</th>
+            <th>Membership Category</th>
+            <th>Date Submitted</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="applicationsTableBody">
+          <tr>
+            <td colspan="6">Applications will appear here.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
 
     </main>
   </div>
