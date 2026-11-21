@@ -82,8 +82,11 @@ function showAdminDashboard() {
 
   showSection("dashboard");
   loadGalleryImages();
+  loadApplications();
+  loadMembers();
+  loadMemberLinkRequests();
+  loadShareCapitalAudit();
 }
-
 function showAdminLogin() {
   loginSection.classList.remove("hidden");
   adminLayout.classList.add("hidden");
@@ -339,6 +342,113 @@ async function loadGalleryImages() {
 }
 
 // =============================================
+// LOAD MEMBERSHIP APPLICATIONS
+// =============================================
+
+const applicationsTableBody =
+  document.getElementById("applicationsTableBody");
+
+const applicationsStatus =
+  document.getElementById("applicationsStatus");
+
+const refreshApplicationsBtn =
+  document.getElementById("refreshApplicationsBtn");
+
+async function loadApplications() {
+  applicationsTableBody.innerHTML =
+    '<tr><td colspan="6">Loading applications...</td></tr>';
+
+  applicationsStatus.textContent =
+    "Loading membership applications...";
+
+  const { data, error } =
+    await supabaseClient.functions.invoke(
+      "admin-membership-applications"
+    );
+
+  if (error) {
+    applicationsTableBody.innerHTML =
+      '<tr><td colspan="6">Unable to load applications.</td></tr>';
+
+    applicationsStatus.textContent =
+      "Unable to load applications: " + error.message;
+    return;
+  }
+
+  if (!data || !data.success) {
+    applicationsTableBody.innerHTML =
+      '<tr><td colspan="6">Unable to load applications.</td></tr>';
+
+    applicationsStatus.textContent =
+      data?.error || "Unable to load applications.";
+    return;
+  }
+
+  const applications = data.applications || [];
+
+  applicationsTableBody.replaceChildren();
+
+  if (applications.length === 0) {
+    applicationsTableBody.innerHTML =
+      '<tr><td colspan="6">No membership applications found.</td></tr>';
+
+    applicationsStatus.textContent =
+      "No membership applications have been submitted yet.";
+    return;
+  }
+
+  applications.forEach(function (application) {
+    const row = document.createElement("tr");
+
+    const applicantCell = document.createElement("td");
+    applicantCell.textContent =
+      application.full_name || "—";
+
+    const contactCell = document.createElement("td");
+    contactCell.textContent =
+      application.mobile_phone || "—";
+
+    const categoryCell = document.createElement("td");
+    categoryCell.textContent =
+      application.membership_category || "—";
+
+    const dateCell = document.createElement("td");
+
+    const submittedDate = application.created_at
+      ? new Date(application.created_at)
+      : null;
+
+    dateCell.textContent =
+      submittedDate && !isNaN(submittedDate.getTime())
+        ? submittedDate.toLocaleDateString()
+        : "—";
+
+    const statusCell = document.createElement("td");
+    statusCell.textContent = application.status || "pending";
+
+    const actionCell = document.createElement("td");
+    actionCell.textContent = "For review";
+
+    row.appendChild(applicantCell);
+    row.appendChild(contactCell);
+    row.appendChild(categoryCell);
+    row.appendChild(dateCell);
+    row.appendChild(statusCell);
+    row.appendChild(actionCell);
+
+    applicationsTableBody.appendChild(row);
+  });
+
+  applicationsStatus.textContent =
+    applications.length + " application(s) loaded successfully.";
+}
+
+// Refresh Applications button
+refreshApplicationsBtn.addEventListener("click", function () {
+  loadApplications();
+});
+
+// =============================================
 // PUBLISH / UNPUBLISH IMAGE
 // =============================================
 
@@ -563,6 +673,353 @@ function escapeHTML(value) {
     };
 
     return replacements[character];
+  });
+}
+
+// =============================================
+// MEMBERS DIRECTORY
+// =============================================
+
+async function loadMembers() {
+  const tableBody = document.getElementById("membersTableBody");
+  const totalCount = document.getElementById("totalMembersCount");
+  const activeCount = document.getElementById("activeMembersCount");
+  const pendingCount = document.getElementById("pendingMembersCount");
+
+  if (!tableBody) return;
+
+  tableBody.innerHTML =
+    '<tr><td colspan="4">Loading members...</td></tr>';
+
+  try {
+    const { data: members, error } = await supabaseClient
+      .from("members")
+      .select("member_id, full_name, status, auth_user_id")
+      .order("member_id", { ascending: true });
+
+    if (error) throw error;
+
+    totalCount.textContent = members.length;
+
+    activeCount.textContent = members.filter(
+      member => member.status === "active"
+    ).length;
+
+    pendingCount.textContent = members.filter(
+      member => member.status === "pending_verification"
+    ).length;
+
+    if (members.length === 0) {
+      tableBody.innerHTML =
+        '<tr><td colspan="4">No members found.</td></tr>';
+      return;
+    }
+
+    tableBody.innerHTML = members.map(member => `
+      <tr>
+        <td>${escapeHTML(member.member_id)}</td>
+        <td>${escapeHTML(member.full_name)}</td>
+        <td>${escapeHTML(member.status)}</td>
+        <td>${member.auth_user_id ? "Linked" : "Not linked"}</td>
+      </tr>
+    `).join("");
+
+  } catch (error) {
+    console.error("Load members error:", error);
+
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="4">
+          Unable to load members: ${escapeHTML(error.message)}
+        </td>
+      </tr>
+    `;
+  }
+}
+// =============================================
+// SHARE CAPITAL AUDIT
+// =============================================
+
+async function loadShareCapitalAudit() {
+  const tableBody = document.getElementById("shareCapitalTableBody");
+  const status = document.getElementById("shareCapitalStatus");
+
+  if (!tableBody) return;
+
+  tableBody.innerHTML =
+    '<tr><td colspan="8">Loading audit records...</td></tr>';
+
+  if (status) status.textContent = "Loading Share Capital Audit...";
+
+  try {
+    const { data, error } = await supabaseClient
+      .from("share_capital_opening_audit_summary")
+      .select(`
+        transaction_id,
+        member_id,
+        record_category,
+        amount_in,
+        source_ending_balance,
+        balance_difference,
+        verified_status,
+        review_status
+      `)
+      .order("member_id", { ascending: true });
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      tableBody.innerHTML =
+        '<tr><td colspan="8">No audit records found.</td></tr>';
+
+      if (status) status.textContent = "No audit records found.";
+      return;
+    }
+
+    tableBody.innerHTML = data.map(record => `
+      <tr>
+        <td>${escapeHTML(record.transaction_id || "-")}</td>
+        <td>${escapeHTML(record.member_id || "-")}</td>
+        <td>${escapeHTML(record.record_category || "-")}</td>
+        <td>${escapeHTML(record.amount_in || "-")}</td>
+        <td>${escapeHTML(record.source_ending_balance || "-")}</td>
+        <td>${escapeHTML(record.balance_difference || "-")}</td>
+        <td>${escapeHTML(record.verified_status || "-")}</td>
+        <td>${escapeHTML(record.review_status || "-")}</td>
+      </tr>
+    `).join("");
+
+    if (status) {
+      status.textContent =
+        `Successfully loaded ${data.length} audit records.`;
+    }
+
+  } catch (error) {
+    console.error("Share Capital Audit error:", error);
+
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="8">
+          Unable to load audit records: ${escapeHTML(error.message)}
+        </td>
+      </tr>
+    `;
+
+    if (status) status.textContent = "Unable to load audit records.";
+  }
+}
+const refreshShareCapitalBtn = document.getElementById(
+  "refreshShareCapitalBtn"
+);
+
+if (refreshShareCapitalBtn) {
+  refreshShareCapitalBtn.addEventListener("click", function () {
+    loadShareCapitalAudit();
+  });
+}
+ // =============================================
+ // ACCOUNT LINKING REQUESTS
+ // =============================================
+
+async function loadMemberLinkRequests() {
+  const tableBody = document.getElementById("memberLinkRequestsBody");
+
+  if (!tableBody) return;
+
+  tableBody.innerHTML =
+   '<tr><td colspan="6">Loading requests...</td></tr>';
+
+  try {
+    const { data: sessionData, error: sessionError } =
+      await supabaseClient.auth.getSession();
+
+    if (sessionError) throw sessionError;
+
+    const session = sessionData.session;
+
+    if (!session) {
+      throw new Error("Please log in again.");
+    }
+
+    if (session.user.id !== PALCON_ADMIN_UID) {
+      throw new Error("Administrator access required.");
+    }
+
+    const response = await fetch(
+      PALCON_SUPABASE_URL + "/functions/v1/bright-service",
+      {
+        method: "GET",
+        headers: {
+          "Authorization": "Bearer " + session.access_token,
+          "apikey": PALCON_SUPABASE_KEY
+        }
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Unable to load requests.");
+    }
+
+    const requests = result.requests || [];
+
+   
+if (requests.length === 0) {
+  tableBody.innerHTML =
+    '<tr><td colspan="6">No pending account-link requests.</td></tr>';
+  return;
+}
+
+tableBody.innerHTML = requests.map(request => `
+  <tr>
+    <td>${escapeHTML(request.submitted_member_id)}</td>
+    <td>${escapeHTML(request.submitted_full_name)}</td>
+    <td>${escapeHTML(request.submitted_contact_number)}</td>
+    <td>${escapeHTML(new Date(request.created_at).toLocaleString())}</td>
+    <td>${escapeHTML(request.status)}</td>
+    <td>
+      <button
+        type="button"
+        class="approve-link-btn"
+        data-request-id="${escapeHTML(request.id)}">
+        Approve
+      </button>
+      <button
+        type="button"
+        class="reject-link-btn"
+        data-request-id="${escapeHTML(request.id)}">
+        Reject
+      </button>
+    </td>
+  </tr>
+`).join("");
+
+} catch (error) {
+  console.error("Load member link requests error:", error);
+
+  tableBody.innerHTML = `
+    <tr>
+      <td colspan="6">
+        Unable to load requests: ${escapeHTML(error.message)}
+      </td>
+    </tr>
+  `;
+}
+}
+
+// =============================================
+// APPROVE / REJECT MEMBER LINK REQUESTS
+// =============================================
+
+const linkRequestsTable = document.getElementById(
+  "memberLinkRequestsBody"
+);
+
+if (
+  linkRequestsTable &&
+  !linkRequestsTable.dataset.reviewHandlerAttached
+) {
+  linkRequestsTable.dataset.reviewHandlerAttached = "true";
+
+  linkRequestsTable.addEventListener("click", async (event) => {
+    const button = event.target.closest(
+      ".approve-link-btn, .reject-link-btn"
+    );
+
+    if (!button) return;
+
+    const requestId = button.dataset.requestId;
+    const decision = button.classList.contains("approve-link-btn")
+      ? "approved"
+      : "rejected";
+
+    if (!requestId) return;
+
+    if (
+      decision === "approved" &&
+      !confirm(
+        "Approve this request? Make sure you have verified the member's identity using official PALCON records."
+      )
+    ) {
+      return;
+    }
+
+    let reviewNotes = "";
+
+    if (decision === "rejected") {
+      const notes = prompt("Reason for rejection (optional):");
+
+      if (notes === null) return;
+
+      reviewNotes = notes.trim();
+    }
+
+    try {
+      button.disabled = true;
+
+      const { data: sessionData, error: sessionError } =
+        await supabaseClient.auth.getSession();
+
+      if (sessionError) throw sessionError;
+
+      const session = sessionData.session;
+
+      if (!session || session.user.id !== PALCON_ADMIN_UID) {
+        throw new Error("Administrator access required.");
+      }
+
+      const response = await fetch(
+        PALCON_SUPABASE_URL + "/functions/v1/bright-service",
+        {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + session.access_token,
+            "apikey": PALCON_SUPABASE_KEY,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            action: "review",
+            request_id: requestId,
+            decision: decision,
+            review_notes: reviewNotes
+          })
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Unable to review request.");
+      }
+
+      alert(result.message || "Request reviewed successfully.");
+
+      await loadMemberLinkRequests();
+
+      if (decision === "approved") {
+        await loadMembers();
+      }
+
+    } catch (error) {
+      console.error("Review request error:", error);
+      alert(error.message || "Something went wrong.");
+      button.disabled = false;
+    }
+  });
+}
+
+// Search members
+const memberSearch = document.getElementById("memberSearch");
+
+if (memberSearch) {
+  memberSearch.addEventListener("input", function () {
+    const searchValue = this.value.toLowerCase();
+
+    document.querySelectorAll("#membersTableBody tr").forEach(row => {
+      row.style.display = row.textContent.toLowerCase()
+        .includes(searchValue) ? "" : "none";
+    });
   });
 }
 
