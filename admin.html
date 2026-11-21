@@ -131,13 +131,12 @@
           </article>
 
           <article class="summary-card">
-            <span>Membership</span>
-            <strong>Applications</strong>
-            <button class="text-btn" data-go="applications">
-              View applications →
-            </button>
-          </article>
-        </div>
+  <span>Financial Records</span>
+  <strong>Share Capital Audit</strong>
+  <button class="text-btn" data-go="shareCapital">
+    View audit →
+  </button>
+</article>
 
         <div class="info-notice">
           <strong>Development status:</strong>
@@ -146,7 +145,55 @@
           be enabled after the backend setup is verified.
         </div>
       </section>
+<!-- SHARE CAPITAL AUDIT SECTION -->
+<section class="admin-section hidden" id="shareCapitalSection">
+  <p class="eyebrow">FINANCIAL RECORDS</p>
+  <h1>Share Capital Audit</h1>
+  <p class="subtitle">
+    Review imported opening balances and audit exceptions.
+  </p>
 
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h2>Opening Balance Audit Summary</h2>
+        <p class="panel-description">
+          Records from the 2020 opening balance audit.
+        </p>
+      </div>
+
+      <button type="button" class="primary-btn" id="refreshShareCapitalBtn">
+        Refresh
+      </button>
+    </div>
+
+    <p id="shareCapitalStatus" class="form-status" role="status">
+      Audit records are ready to load.
+    </p>
+
+    <div class="table-responsive">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Transaction ID</th>
+            <th>Member ID</th>
+            <th>Category</th>
+            <th>Amount In</th>
+            <th>Source Balance</th>
+            <th>Difference</th>
+            <th>Verified Status</th>
+            <th>Review Status</th>
+          </tr>
+        </thead>
+        <tbody id="shareCapitalTableBody">
+          <tr>
+            <td colspan="8">No audit records loaded yet.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
       <!-- GALLERY SECTION -->
       <section class="admin-section hidden" id="gallerySection">
         <p class="eyebrow">WEBSITE CONTENT</p>
@@ -292,7 +339,7 @@
             <th>Contact Number</th>
             <th>Date Submitted</th>
             <th>Status</th>
-             <th>Action</th>
+ <th>Action</th>
           </tr>
         </thead>
         <tbody id="memberLinkRequestsBody">
@@ -340,7 +387,7 @@
             <th>Membership Category</th>
             <th>Date Submitted</th>
             <th>Status</th>
-           
+            <th>Action</th>
           </tr>
         </thead>
         <tbody id="applicationsTableBody">

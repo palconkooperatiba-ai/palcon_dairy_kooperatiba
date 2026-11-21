@@ -85,6 +85,7 @@ function showAdminDashboard() {
   loadApplications();
   loadMembers();
   loadMemberLinkRequests();
+  loadShareCapitalAudit();
 }
 function showAdminLogin() {
   loginSection.classList.remove("hidden");
@@ -735,7 +736,87 @@ async function loadMembers() {
     `;
   }
 }
+// =============================================
+// SHARE CAPITAL AUDIT
+// =============================================
 
+async function loadShareCapitalAudit() {
+  const tableBody = document.getElementById("shareCapitalTableBody");
+  const status = document.getElementById("shareCapitalStatus");
+
+  if (!tableBody) return;
+
+  tableBody.innerHTML =
+    '<tr><td colspan="8">Loading audit records...</td></tr>';
+
+  if (status) status.textContent = "Loading Share Capital Audit...";
+
+  try {
+    const { data, error } = await supabaseClient
+      .from("share_capital_opening_audit_summary")
+      .select(`
+        transaction_id,
+        member_id,
+        record_category,
+        amount_in,
+        source_ending_balance,
+        balance_difference,
+        verified_status,
+        review_status
+      `)
+      .order("member_id", { ascending: true });
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      tableBody.innerHTML =
+        '<tr><td colspan="8">No audit records found.</td></tr>';
+
+      if (status) status.textContent = "No audit records found.";
+      return;
+    }
+
+    tableBody.innerHTML = data.map(record => `
+      <tr>
+        <td>${escapeHTML(record.transaction_id || "-")}</td>
+        <td>${escapeHTML(record.member_id || "-")}</td>
+        <td>${escapeHTML(record.record_category || "-")}</td>
+        <td>${escapeHTML(record.amount_in || "-")}</td>
+        <td>${escapeHTML(record.source_ending_balance || "-")}</td>
+        <td>${escapeHTML(record.balance_difference || "-")}</td>
+        <td>${escapeHTML(record.verified_status || "-")}</td>
+        <td>${escapeHTML(record.review_status || "-")}</td>
+      </tr>
+    `).join("");
+
+    if (status) {
+      status.textContent =
+        `Successfully loaded ${data.length} audit records.`;
+    }
+
+  } catch (error) {
+    console.error("Share Capital Audit error:", error);
+
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="8">
+          Unable to load audit records: ${escapeHTML(error.message)}
+        </td>
+      </tr>
+    `;
+
+    if (status) status.textContent = "Unable to load audit records.";
+  }
+}
+const refreshShareCapitalBtn = document.getElementById(
+  "refreshShareCapitalBtn"
+);
+
+if (refreshShareCapitalBtn) {
+  refreshShareCapitalBtn.addEventListener("click", function () {
+    loadShareCapitalAudit();
+  });
+}
  // =============================================
  // ACCOUNT LINKING REQUESTS
  // =============================================
